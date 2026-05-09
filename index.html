@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DevTools Suite</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b1220;
+    --panel: #121a2b;
+    --line: #1f2a44;
+    --ink: #e8eefc;
+    --muted: #9aa7c2;
+    --brand: #5b8def;
+    --brand-2: #7c5cff;
+    --purple: #7F77DD;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, #0d1426, #0b1220);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-mark {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: conic-gradient(from 200deg, var(--brand), var(--brand-2), var(--brand));
+    display: grid; place-items: center;
+    color: white; font-weight: 800; font-size: 14px;
+    box-shadow: 0 6px 22px rgba(91,141,239,.35);
+    flex-shrink: 0;
+  }
+  header h1 { font-size: 18px; font-weight: 600; }
+  header p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  main {
+    flex: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 56px 24px;
+  }
+
+  .hero {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .hero h2 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -.5px;
+    background: linear-gradient(135deg, #e8eefc 30%, var(--brand-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    color: var(--muted);
+    font-size: 16px;
+    margin-top: 12px;
+    max-width: 540px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  .tools {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 640px) { .tools { grid-template-columns: 1fr; } }
+
+  .tool-card {
+    background: linear-gradient(180deg, #13203b, #0f1a30);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform .15s, border-color .15s, box-shadow .15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .tool-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(400px 250px at 0% 0%, rgba(91,141,239,.08), transparent 60%);
+    pointer-events: none;
+  }
+  .tool-card:hover {
+    transform: translateY(-3px);
+    border-color: #2a3a66;
+    box-shadow: 0 12px 40px rgba(0,0,0,.4);
+  }
+
+  .tool-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: grid; place-items: center;
+    font-size: 22px;
+    margin-bottom: 18px;
+  }
+  .tool-icon.purple { background: rgba(127,119,221,.15); border: 1px solid rgba(127,119,221,.3); }
+  .tool-icon.blue   { background: rgba(91,141,239,.15);  border: 1px solid rgba(91,141,239,.3); }
+
+  .tool-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .tool-card p  { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; }
+  .tag {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #172147;
+    color: #bcd0ff;
+    border: 1px solid #29396b;
+    font-weight: 500;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--brand);
+  }
+  .cta::after { content: "&#8594;"; }
+
+  footer {
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    border-top: 1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-mark">DT</div>
+  <div>
+    <h1>DevTools Suite</h1>
+    <p>Developer productivity &amp; HR analytics tools</p>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <h2>Two tools, one place.</h2>
+    <p>Analyze your frontend builds and understand your workforce skill gaps — all in the browser, no backend required.</p>
+  </div>
+
+  <div class="tools">
+    <a class="tool-card" href="build-analyzer.html">
+      <div class="tool-icon purple">&#9889;</div>
+      <h3>Build Analyzer</h3>
+      <p>Visualize bundle composition, track build history, enforce size budgets, and ship GitHub Actions + Netlify configs in one click.</p>
+      <div class="tags">
+        <span class="tag">Webpack</span>
+        <span class="tag">Vite</span>
+        <span class="tag">esbuild</span>
+        <span class="tag">CI/CD</span>
+        <span class="tag">Lighthouse</span>
+      </div>
+      <span class="cta">Open tool</span>
+    </a>
+
+    <a class="tool-card" href="skillsync-enterprise.html">
+      <div class="tool-icon blue">&#128202;</div>
+      <h3>SkillSync Enterprise</h3>
+      <p>Map every employee's SIPA-IT skills, spot critical gaps by department, build target roles, and get a hire-vs-train recommendation instantly.</p>
+      <div class="tags">
+        <span class="tag">HR Analytics</span>
+        <span class="tag">SIPA-IT</span>
+        <span class="tag">Heatmap</span>
+        <span class="tag">CSV upload</span>
+        <span class="tag">Role builder</span>
+      </div>
+      <span class="cta">Open tool</span>
+    </a>
+  </div>
+</main>
+
+<footer>
+  DevTools Suite &middot; All processing is client-side &middot; No data leaves your browser
+</footer>
+</body>
+</html>
