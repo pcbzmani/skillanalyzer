@@ -251,6 +251,23 @@ main{flex:1;padding:20px 28px;display:flex;flex-direction:column;gap:20px}
   font-size:12px;text-align:center
 }
 
+/* Level nav inside expanded panel */
+.lvl-nav{display:flex;border-bottom:1px solid var(--line);background:rgba(0,0,0,.2)}
+.lvl-nav-btn{
+  flex:1;padding:10px 6px;border:none;background:none;cursor:pointer;
+  font-size:11px;font-weight:600;color:var(--muted);
+  border-bottom:3px solid transparent;transition:all .15s;
+  display:flex;flex-direction:column;align-items:center;gap:3px
+}
+.lvl-nav-btn .lv-n{font-size:16px;font-weight:800;line-height:1}
+.lvl-nav-btn .lv-t{font-size:9px;opacity:.8}
+.lvl-nav-btn:not(.disabled):hover{color:var(--ink);background:rgba(255,255,255,.04)}
+.lvl-nav-btn.disabled{opacity:.25;cursor:not-allowed}
+.lvl-nav-btn.active.lv1{color:var(--teal);border-bottom-color:var(--teal);background:rgba(20,184,166,.07)}
+.lvl-nav-btn.active.lv2{color:var(--brand);border-bottom-color:var(--brand);background:rgba(79,131,227,.07)}
+.lvl-nav-btn.active.lv3{color:var(--amber);border-bottom-color:var(--amber);background:rgba(245,158,11,.07)}
+.lvl-nav-btn.active.lv4{color:var(--violet);border-bottom-color:var(--violet);background:rgba(139,92,246,.07)}
+
 @media(max-width:640px){
   header{padding:14px 16px}
   .controls,.main{padding:12px 16px}
@@ -458,23 +475,36 @@ main{flex:1;padding:20px 28px;display:flex;flex-direction:column;gap:20px}
   }
 
   function renderExpandedPanel(s){
-    const activeTab = 'levels';
+    const curLv  = activeProfLvl[s.id] || 1;
+    const lvNames = ['Foundation','Intermediate','Advanced','Expert'];
+
+    // Level nav (L1–L4 tabs at top of panel)
+    const navBtns = [1,2,3,4].map(lv => {
+      const hasData = s.levels && s.levels[lv] && s.levels[lv].proficiency_description;
+      const isAct   = lv === curLv;
+      const cls     = ['lvl-nav-btn', isAct ? `active lv${lv}` : '', !hasData ? 'disabled' : ''].join(' ');
+      const handler = hasData ? `onclick="switchLevel('${s.id}',${lv},event)"` : '';
+      return `<button class="${cls}" ${handler}>
+        <span class="lv-n">L${lv}</span>
+        <span class="lv-t">${lvNames[lv-1]}</span>
+      </button>`;
+    }).join('');
+
     const sfiaDesc = s.sfiaDescription
       ? `<div class="source-badge sfia">SFIA-9 &#183; ${esc(s.sfiaCode||'')}</div><p class="source-text">${esc(s.sfiaDescription)}</p>`
       : `<p class="source-text" style="color:var(--dim)">No direct SFIA-9 equivalent mapped</p>`;
     const sgDesc = s.sgDescription
-      ? `<p class="source-text">${esc(s.sgDescription)}</p>`
-      : '';
+      ? `<p class="source-text">${esc(s.sgDescription)}</p>` : '';
+
     return `
     <div class="expanded-panel">
+      <div class="lvl-nav">${navBtns}</div>
       <div class="panel-tabs" id="tabs-${s.id}">
-        <div class="ptab active" data-tab="levels" onclick="switchTab('${s.id}','levels')">Proficiency Levels</div>
+        <div class="ptab active" data-tab="levels" onclick="switchTab('${s.id}','levels')">Level ${curLv} &mdash; ${lvNames[curLv-1]}</div>
         <div class="ptab" data-tab="sources" onclick="switchTab('${s.id}','sources')">Source Frameworks</div>
       </div>
       <div class="tab-content active" id="tab-levels-${s.id}">
-        <div class="lvl-detail">
-          ${[1,2,3,4].map(lv=>renderLvlBlock(s,lv)).join('')}
-        </div>
+        ${renderLvlBlock(s, curLv)}
       </div>
       <div class="tab-content" id="tab-sources-${s.id}">
         <div class="sources-grid">
@@ -556,8 +586,8 @@ main{flex:1;padding:20px 28px;display:flex;flex-direction:column;gap:20px}
 
   // ── Interactions ──────────────────────────
   window.toggleCard = function(id, e){
-    // Don't collapse when clicking inside expanded panel, prof-bar, or tabs
-    if(e && e.target.closest('.expanded-panel,.prof-seg,.ptab')) return;
+    // Don't collapse when clicking inside expanded panel, prof-bar, level-nav, or tabs
+    if(e && e.target.closest('.expanded-panel,.prof-seg,.ptab,.lvl-nav-btn')) return;
     if(expandedId === id){
       expandedId = null;
     } else {
@@ -573,18 +603,30 @@ main{flex:1;padding:20px 28px;display:flex;flex-direction:column;gap:20px}
     }
   };
 
-  window.toggleLevel = function(id, lv){
-    activeProfLvl[id] = (activeProfLvl[id]===lv) ? null : lv;
-    // Re-render just this card's prof bar
-    const grid = document.getElementById('skillsGrid');
-    const card = grid.querySelector('[data-id="'+id+'"]');
-    if(card){
-      const profBar = card.querySelector('.prof-bar');
-      if(profBar){
-        const s = SKILLS.find(x=>x.id===id);
-        if(s) profBar.outerHTML = renderProfBar(s);
-      }
-    }
+  // Targeted card re-render (no full grid repaint, no scroll jump)
+  function rerenderCard(id){
+    const s = SKILLS.find(x => x.id === id);
+    if(!s) return;
+    const old = document.getElementById('card-' + id);
+    if(!old) return;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = renderCard(s);
+    old.replaceWith(tmp.firstElementChild);
+  }
+
+  // Clicking prof-bar segment: select level + expand card
+  window.toggleLevel = function(id, lv, e){
+    if(e) e.stopPropagation();
+    activeProfLvl[id] = lv;
+    expandedId = id;
+    rerenderCard(id);
+  };
+
+  // Switching level inside the expanded panel
+  window.switchLevel = function(id, lv, e){
+    if(e) e.stopPropagation();
+    activeProfLvl[id] = lv;
+    rerenderCard(id);
   };
 
   window.switchTab = function(id, tab){
