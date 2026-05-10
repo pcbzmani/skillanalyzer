@@ -80,7 +80,8 @@
     grid-template-columns: 1fr 1fr;
     gap: 20px;
   }
-  @media (max-width: 640px) { .tools { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .tools { grid-template-columns: 1fr 1fr !important; } }
+  @media (max-width: 560px) { .tools { grid-template-columns: 1fr !important; } }
 
   .tool-card {
     background: linear-gradient(180deg, #13203b, #0f1a30);
@@ -165,7 +166,21 @@
     <p>Analyze your frontend builds and understand your workforce skill gaps — all in the browser, no backend required.</p>
   </div>
 
-  <div class="tools">
+  <div class="tools" style="grid-template-columns:1fr 1fr 1fr">
+    <a class="tool-card" href="ict-skills-library.html">
+      <div class="tool-icon" style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3)">&#127981;</div>
+      <h3>ICT Skills Library</h3>
+      <p>Browse all 154 Singapore ICT skills with unified descriptions from SkillsFuture, SFIA-9 and ESCO. Filter by category, proficiency level 1–4, or emerging skills.</p>
+      <div class="tags">
+        <span class="tag">SkillsFuture</span>
+        <span class="tag">SFIA-9</span>
+        <span class="tag">ESCO</span>
+        <span class="tag">Proficiency 1–4</span>
+        <span class="tag">Emerging</span>
+      </div>
+      <span class="cta">Open tool</span>
+    </a>
+
     <a class="tool-card" href="build-analyzer.html">
       <div class="tool-icon purple">&#9889;</div>
       <h3>Build Analyzer</h3>

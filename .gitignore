@@ -10,3 +10,9 @@ Thumbs.db
 
 # Netlify
 .netlify/
+
+.env
+# Generator scripts and raw data
+skills_data.json
+generate_*.py
+.claude/
