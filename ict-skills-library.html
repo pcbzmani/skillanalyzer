@@ -286,6 +286,35 @@ main{flex:1;padding:20px 28px;display:flex;flex-direction:column;gap:20px}
     <button class="filter-btn emerging-btn" id="emergingToggle">
       <span>&#10022;</span> Emerging Skills
     </button>
+    <div style="position:relative;margin-left:auto">
+      <button class="filter-btn" id="downloadBtn" onclick="toggleDownloadMenu()" style="gap:6px">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v7.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 11.586V4a1 1 0 011-1zM3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+        Download Data
+      </button>
+      <div id="downloadMenu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#0e1828;border:1px solid #1a2d4a;border-radius:10px;min-width:200px;z-index:100;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5)">
+        <div style="padding:8px 0">
+          <div style="padding:6px 14px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#4a6080">Export current view</div>
+          <button onclick="downloadFiltered('csv')" style="width:100%;padding:10px 16px;background:none;border:none;color:#e4ecfc;font-size:13px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px" onmouseover="this.style.background='rgba(79,131,227,.12)'" onmouseout="this.style.background='none'">
+            <span style="font-size:16px">&#128196;</span> Download CSV
+            <span style="font-size:11px;color:#4a6080;margin-left:auto">spreadsheet</span>
+          </button>
+          <button onclick="downloadFiltered('json')" style="width:100%;padding:10px 16px;background:none;border:none;color:#e4ecfc;font-size:13px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px" onmouseover="this.style.background='rgba(79,131,227,.12)'" onmouseout="this.style.background='none'">
+            <span style="font-size:16px">&#128736;</span> Download JSON
+            <span style="font-size:11px;color:#4a6080;margin-left:auto">full data</span>
+          </button>
+          <hr style="border:none;border-top:1px solid #1a2d4a;margin:4px 0"/>
+          <div style="padding:6px 14px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#4a6080">All 154 skills</div>
+          <button onclick="downloadAll('csv')" style="width:100%;padding:10px 16px;background:none;border:none;color:#e4ecfc;font-size:13px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px" onmouseover="this.style.background='rgba(79,131,227,.12)'" onmouseout="this.style.background='none'">
+            <span style="font-size:16px">&#128196;</span> All Skills CSV
+            <span style="font-size:11px;color:#4a6080;margin-left:auto">complete</span>
+          </button>
+          <button onclick="downloadAll('json')" style="width:100%;padding:10px 16px;background:none;border:none;color:#e4ecfc;font-size:13px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px" onmouseover="this.style.background='rgba(79,131,227,.12)'" onmouseout="this.style.background='none'">
+            <span style="font-size:16px">&#128736;</span> All Skills JSON
+            <span style="font-size:11px;color:#4a6080;margin-left:auto">complete</span>
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="lvl-filter">
       <button class="lvl-btn active" data-lvl="all">All Levels</button>
       <button class="lvl-btn" data-lvl="1">L1 Foundation</button>
@@ -603,6 +632,101 @@ main{flex:1;padding:20px 28px;display:flex;flex-direction:column;gap:20px}
   // ── Init ─────────────────────────────────
   render();
 })();
+
+// ── Download helpers (global scope) ──────────────────────────────────────────
+function toggleDownloadMenu(){
+  const m = document.getElementById('downloadMenu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function(e){
+  if(!e.target.closest('#downloadBtn') && !e.target.closest('#downloadMenu')){
+    const m = document.getElementById('downloadMenu');
+    if(m) m.style.display = 'none';
+  }
+});
+
+function skillsToCSV(arr){
+  const esc = v => '"' + String(v||'').replace(/"/g,'""') + '"';
+  const headers = [
+    'ID','Title','Category','IsEmerging','SFIACode','SFIAName','TSCCode',
+    'UnifiedDescription','SGDescription','SFIADescription',
+    'L1_Label','L1_ProficiencyDescription','L1_Knowledge','L1_Ability',
+    'L2_Label','L2_ProficiencyDescription','L2_Knowledge','L2_Ability',
+    'L3_Label','L3_ProficiencyDescription','L3_Knowledge','L3_Ability',
+    'L4_Label','L4_ProficiencyDescription','L4_Knowledge','L4_Ability'
+  ];
+  const rows = arr.map(s => {
+    const lv = s.levels || {};
+    const lvRow = [1,2,3,4].flatMap(n => {
+      const l = lv[n] || {};
+      return [
+        l.label || '',
+        l.proficiency_description || '',
+        (l.knowledge||[]).join(' | '),
+        (l.ability||[]).join(' | ')
+      ];
+    });
+    return [
+      s.id, s.title, s.category, s.isEmerging ? 'Yes' : 'No',
+      s.sfiaCode||'', s.sfiaName||'', s.tscCode||'',
+      s.unifiedDescription||'', s.sgDescription||'', s.sfiaDescription||'',
+      ...lvRow
+    ].map(esc).join(',');
+  });
+  return [headers.map(h=>'"'+h+'"').join(','), ...rows].join('\r\n');
+}
+
+function triggerDownload(content, filename, mime){
+  const blob = new Blob([content], {type: mime});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  document.getElementById('downloadMenu').style.display = 'none';
+}
+
+function getFilteredSkills(){
+  const SKILLS = JSON.parse(document.getElementById('SKILLS_DATA').textContent);
+  const search  = document.getElementById('searchBox').value.trim().toLowerCase();
+  const catEl   = document.querySelector('.cat-pill.active');
+  const cat     = catEl ? catEl.dataset.cat : 'all';
+  const lvlEl   = document.querySelector('.lvl-btn.active');
+  const lvl     = lvlEl ? lvlEl.dataset.lvl : 'all';
+  const emerging = document.getElementById('emergingToggle').classList.contains('active');
+  return SKILLS.filter(s => {
+    if(cat !== 'all' && s.category !== cat) return false;
+    if(emerging && !s.isEmerging) return false;
+    if(lvl !== 'all'){
+      const l = parseInt(lvl);
+      if(!s.levels||!s.levels[l]||!s.levels[l].proficiency_description) return false;
+    }
+    if(search){
+      return (s.title+'|'+s.unifiedDescription+'|'+s.category+'|'+(s.sfiaCode||'')+'|'+(s.tscCode||''))
+        .toLowerCase().includes(search);
+    }
+    return true;
+  });
+}
+
+function downloadFiltered(fmt){
+  const data = getFilteredSkills();
+  const ts   = new Date().toISOString().slice(0,10);
+  if(fmt==='csv'){
+    triggerDownload(skillsToCSV(data), `ict-skills-filtered-${ts}.csv`, 'text/csv;charset=utf-8;');
+  } else {
+    triggerDownload(JSON.stringify(data, null, 2), `ict-skills-filtered-${ts}.json`, 'application/json');
+  }
+}
+
+function downloadAll(fmt){
+  const SKILLS = JSON.parse(document.getElementById('SKILLS_DATA').textContent);
+  const ts = new Date().toISOString().slice(0,10);
+  if(fmt==='csv'){
+    triggerDownload(skillsToCSV(SKILLS), `ict-skills-all-${ts}.csv`, 'text/csv;charset=utf-8;');
+  } else {
+    triggerDownload(JSON.stringify(SKILLS, null, 2), `ict-skills-all-${ts}.json`, 'application/json');
+  }
+}
 </script>
 </body>
 </html>
